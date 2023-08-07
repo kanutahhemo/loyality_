@@ -573,7 +573,7 @@ func UserGetOrder(db database.PgDB, logger *logrus.Logger) http.HandlerFunc {
 		}
 
 		var result database.Order
-		var limit int = 3 //TODO configure limit from args
+		limit := 3 //TODO configure limit from args
 		result, err = db.UserGetOrder(userID, orderID, limit)
 		if err != nil {
 			logger.Errorf("UserGetOrder Handler : %s", err)
