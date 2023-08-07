@@ -143,7 +143,7 @@ func AuthMiddleware(logger *logrus.Logger) func(http.Handler) http.Handler {
 			}
 
 			userID := int(claims["user_id"].(float64))
-			logger.Debugf(string(userID))
+
 			ctx := context.WithValue(req.Context(), userIDKey, userID)
 
 			next.ServeHTTP(w, req.WithContext(ctx))
