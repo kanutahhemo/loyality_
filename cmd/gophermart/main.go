@@ -28,7 +28,6 @@ func main() {
 		FullTimestamp: true,
 	})
 
-	// Устанавливаем уровень логирования в зависимости от значения logLevel
 	switch cfg.LogLevel {
 	case "ERROR":
 		logger.SetLevel(logrus.ErrorLevel)
@@ -42,7 +41,6 @@ func main() {
 		logger.SetLevel(logrus.InfoLevel)
 	}
 
-	// Устанавливаем вывод в файл
 	logger.SetOutput(logFile)
 	logger.Debugf("Loglevel is %s", logger.GetLevel())
 
