@@ -59,7 +59,7 @@ func ApplyMigrations(dbURL string) error {
 
 	m, err := migrate.NewWithSourceInstance("iofs", driver, dbURL)
 	if err != nil {
-		return fmt.Errorf("failed to create migration instance: %w", err)
+		return fmt.Errorf("failed to create migration instance: %w", dbURL)
 	}
 
 	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
