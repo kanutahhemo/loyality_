@@ -76,12 +76,14 @@ func GetCfg() Config {
 
 	Cfg.SecretKey, present = os.LookupEnv("SECRET")
 	if !present {
-		log.Fatal("Please specify secret key")
+		log.Print("SECRET is not specified. Set it to 111")
+		Cfg.LogLevel = "111"
 	}
 
 	Cfg.LogLevel, present = os.LookupEnv("LOGLEVEL")
 	if !present {
-		log.Fatal("Please specify LOGLEVEL")
+		log.Print("LOGLEVEL is not specified. Set it to error")
+		Cfg.LogLevel = "ERROR"
 	}
 	return Cfg
 }
