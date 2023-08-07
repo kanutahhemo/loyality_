@@ -7,11 +7,11 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/golang-migrate/migrate/v4/source/iofs"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"os"
-	"path/filepath"
+	"github.com/kanutahhemo/loyality_/internal/storage/database/migrations"
 	"strconv"
 	"time"
 )
@@ -48,15 +48,12 @@ type PgDB struct {
 }
 
 func ApplyMigrations(dbURL string) error {
-	wd, err := os.Getwd()
+	driver, err := iofs.New(migrations.Migrations, "migrations")
 	if err != nil {
-		return fmt.Errorf("failed to get current working directory: %w", err)
+		return fmt.Errorf("failed to create migration driver: %w", err)
 	}
 
-	// Соединяем текущий рабочий каталог с относительным путем к миграциям
-	migrationsPath := filepath.Join(wd, "../../internal/storage/database/migrations/")
-
-	m, err := migrate.New("file://"+migrationsPath, dbURL)
+	m, err := migrate.NewWithSourceInstance("iofs", driver, dbURL)
 	if err != nil {
 		return fmt.Errorf("failed to create migration instance: %w", err)
 	}
