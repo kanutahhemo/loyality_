@@ -12,7 +12,7 @@
 *.out
 
 # Binaries
-cmd/gophermart/main
+cmd/gophermart/gophermart
 cmd/gophermart/*log
 
 # Dependency directories (remove the comment below to include it)

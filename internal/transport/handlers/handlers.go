@@ -299,7 +299,7 @@ func UserLogin(db database.PgDB, logger *logrus.Logger) http.HandlerFunc {
 func UserAddOrder(db database.PgDB, logger *logrus.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		logger.Debug("UserAddOrder handler start")
-		userID, ok := req.Context().Value("userID").(int)
+		userID, ok := req.Context().Value(userIDKey).(int)
 		if !ok {
 			logger.Errorf("UserAddOrder Handler : Failed to get userID from request context")
 			w.WriteHeader(http.StatusInternalServerError)
