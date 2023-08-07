@@ -164,13 +164,15 @@ func (d *PgDB) UserOrders(userID int) ([]Order, error) {
 	}
 
 	var orders []Order
-
+	var orderValue int
 	for rows.Next() {
 		var order Order
-		err := rows.Scan(&order.Number, &order.Status, &order.Accrual, &order.UploadedAt)
+		err := rows.Scan(&orderValue, &order.Status, &order.Accrual, &order.UploadedAt)
+
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan row: %w", err)
 		}
+		order.Number = strconv.Itoa(orderValue)
 		orders = append(orders, order)
 	}
 
