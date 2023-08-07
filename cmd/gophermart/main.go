@@ -44,6 +44,7 @@ func main() {
 	logger.SetOutput(logFile)
 	logger.Debugf("Loglevel is %s", logger.GetLevel())
 
+	logger.Debugf("dns is: %s", cfg.DatabaseDSN)
 	if err := database.ApplyMigrations(cfg.DatabaseDSN); err != nil {
 		logger.Fatalf("failed to apply migrations: %s", err)
 	}
