@@ -355,7 +355,7 @@ func UserAddOrder(db database.PgDB, logger *logrus.Logger) http.HandlerFunc {
 			return
 		}
 
-		w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusAccepted)
 		json.NewEncoder(w).Encode(msgJSON{MsgStr: "User Added Order Successfully"})
 		logger.Debug("UserAddOrder handler end")
 	}
