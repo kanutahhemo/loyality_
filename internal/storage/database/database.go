@@ -164,6 +164,7 @@ func (d *PgDB) UserOrders(userID int) ([]Order, error) {
 	}
 
 	var orders []Order
+
 	for rows.Next() {
 		var order Order
 		err := rows.Scan(&order.Number, &order.Status, &order.Accrual, &order.UploadedAt)
