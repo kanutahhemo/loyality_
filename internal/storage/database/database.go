@@ -50,16 +50,16 @@ type PgDB struct {
 //go:embed migrations/*.sql
 var embedMigrations embed.FS //
 
-func ApplyMigrations(dbURL string) error {
-	fmt.Println(dbURL)
+func ApplyMigrations(dsn string) error {
+	fmt.Println(dsn)
 	driver, err := iofs.New(embedMigrations, "migrations")
 	if err != nil {
 		return fmt.Errorf("failed to create migration driver: %w", err)
 	}
 
-	m, err := migrate.NewWithSourceInstance("iofs", driver, dbURL)
+	m, err := migrate.NewWithSourceInstance("iofs", driver, dsn)
 	if err != nil {
-		return fmt.Errorf("failed to create migration instance: %w", dbURL)
+		return fmt.Errorf("failed to create migration instance: %w", dsn)
 	}
 
 	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
