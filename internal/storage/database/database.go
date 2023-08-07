@@ -134,7 +134,7 @@ func (d *PgDB) UserLogin(user User) (string, int, error) {
 	return password, uid, nil
 }
 
-func (d *PgDB) UserAddOrder(userID int, order int64) (int, error) {
+func (d *PgDB) UserAddOrder(userID int, order string) (int, error) {
 	var orderID int
 	err := d.Pool.QueryRow(context.Background(), `
 	INSERT INTO sp_orders (uid, order_value, status_id) values ($1, $2, (select status_id from sp_statuses where status_value='REGISTERED')) returning order_id

@@ -331,15 +331,7 @@ func UserAddOrder(db database.PgDB, logger *logrus.Logger) http.HandlerFunc {
 			return
 		}
 
-		bodyNumber, err := strconv.ParseInt(string(bodyText), 10, 64)
-		if err != nil {
-			logger.Errorf("UserAddOrder Handler : %s", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			json.NewEncoder(w).Encode(msgJSON{ErrStr: err.Error()})
-			return
-		}
-
-		_, err = db.UserAddOrder(userID, bodyNumber)
+		_, err = db.UserAddOrder(userID, string(bodyText))
 		if err != nil {
 			logger.Errorf("UserAddOrder Handler : %s", err)
 			if err.Error() == "not unique order" {
