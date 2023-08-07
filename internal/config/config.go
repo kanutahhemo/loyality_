@@ -34,7 +34,7 @@ var F string
 
 func init() {
 
-	flag.StringVar(&argsCfg.ServerAddress, "a", "localhost:4432", "Server Address")
+	flag.StringVar(&argsCfg.ServerAddress, "a", "localhost:8080", "Server Address")
 	flag.StringVar(&argsCfg.DatabaseDSN, "d", "", "Database DSN")
 	flag.StringVar(&argsCfg.AccrualSystemAddress, "r", "", "ACCRUAL_SYSTEM_ADDRESS")
 	flag.StringVar(&F, "f", "", "echo string")

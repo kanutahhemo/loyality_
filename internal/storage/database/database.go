@@ -76,7 +76,8 @@ func NewPgDatabase(dsn string) (*PgDB, error) {
 
 	config.MaxConns = 10 //TODO: make in configurable with arguments
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-
+	defer cancel()
+	
 	db, err := pgxpool.ConnectConfig(ctx, config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to the database: %w", err)
