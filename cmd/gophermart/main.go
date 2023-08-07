@@ -14,7 +14,7 @@ import (
 func main() {
 	flag.Parse()
 	cfg := config.GetCfg()
-	fmt.Println("config: "cfg)
+	fmt.Println("config: ", cfg)
 	logFile, err := os.OpenFile("loyality.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("failed to create log file: %s", err)
