@@ -331,7 +331,7 @@ func UserAddOrder(db database.PgDB, logger *logrus.Logger) http.HandlerFunc {
 			return
 		}
 
-		bodyNumber, err := strconv.Atoi(string(bodyText))
+		bodyNumber, err := strconv.ParseInt(bodyText, 10, 64)
 		if err != nil {
 			logger.Errorf("UserAddOrder Handler : %s", err)
 			w.WriteHeader(http.StatusInternalServerError)
