@@ -364,7 +364,7 @@ func UserAddOrder(db database.PgDB, logger *logrus.Logger) http.HandlerFunc {
 func UserOrders(db database.PgDB, logger *logrus.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		logger.Debug("UserOrders handler start")
-		userID, ok := req.Context().Value("userID").(int)
+		userID, ok := req.Context().Value(userIDKey).(int)
 		if !ok {
 			logger.Errorf("UserOrders Handler : Failed to get userID from request context")
 			w.WriteHeader(http.StatusInternalServerError)
@@ -407,7 +407,7 @@ func UserOrders(db database.PgDB, logger *logrus.Logger) http.HandlerFunc {
 func UserBalance(db database.PgDB, logger *logrus.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		logger.Debug("UserBalance handler start")
-		userID, ok := req.Context().Value("userID").(int)
+		userID, ok := req.Context().Value(userIDKey).(int)
 		if !ok {
 			logger.Errorf("UserBalance Handler : Failed to get userID from request context")
 			w.WriteHeader(http.StatusInternalServerError)
@@ -446,7 +446,7 @@ func UserBalance(db database.PgDB, logger *logrus.Logger) http.HandlerFunc {
 func UserBalanceWithdraw(db database.PgDB, logger *logrus.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		logger.Debug("UserBalanceWithdraw handler start")
-		userID, ok := req.Context().Value("userID").(int)
+		userID, ok := req.Context().Value(userIDKey).(int)
 		if !ok {
 			logger.Errorf("UserBalanceWithdraw Handler :Failed to get userID from request context")
 			w.WriteHeader(http.StatusInternalServerError)
@@ -513,7 +513,7 @@ func UserBalanceWithdraw(db database.PgDB, logger *logrus.Logger) http.HandlerFu
 func UserWithdrawals(db database.PgDB, logger *logrus.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		logger.Debug("UserWithdrawals handler start")
-		userID, ok := req.Context().Value("userID").(int)
+		userID, ok := req.Context().Value(userIDKey).(int)
 		if !ok {
 			logger.Errorf("UserWithdrawals Handler : Failed to get userID from request context")
 			w.WriteHeader(http.StatusInternalServerError)
@@ -556,7 +556,7 @@ func UserWithdrawals(db database.PgDB, logger *logrus.Logger) http.HandlerFunc {
 func UserGetOrder(db database.PgDB, logger *logrus.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		logger.Debug("UserGetOrder handler start")
-		userID, ok := req.Context().Value("userID").(int)
+		userID, ok := req.Context().Value(userIDKey).(int)
 		if !ok {
 			logger.Errorf("UserGetOrder Handler : Failed to get userID from request context")
 			w.WriteHeader(http.StatusInternalServerError)
