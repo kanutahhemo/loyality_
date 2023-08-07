@@ -51,7 +51,7 @@ type PgDB struct {
 var embedMigrations embed.FS //
 
 func ApplyMigrations(dbURL string) error {
-
+	fmt.Println(dbURL)
 	driver, err := iofs.New(embedMigrations, "migrations")
 	if err != nil {
 		return fmt.Errorf("failed to create migration driver: %w", err)
