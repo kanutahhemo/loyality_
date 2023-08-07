@@ -85,5 +85,6 @@ func GetCfg() Config {
 		log.Print("LOGLEVEL is not specified. Set it to error")
 		Cfg.LogLevel = "ERROR"
 	}
+
 	return Cfg
 }
