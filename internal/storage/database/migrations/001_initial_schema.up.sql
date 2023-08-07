@@ -15,7 +15,7 @@ INSERT INTO sp_statuses (status_value) values ('REGISTERED'), ('INVALID'), ('PRO
 CREATE TABLE IF NOT EXISTS sp_orders (
     order_id serial PRIMARY KEY,
     uid bigint,
-    order_value int,
+    order_value varchar(100),
     created_time timestamp DEFAULT NOW(),
     status_id int,
     accrual float,
