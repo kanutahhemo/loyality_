@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"database/sql"
+	"embed"
 	"fmt"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -11,7 +12,6 @@ import (
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/kanutahhemo/loyality_/internal/storage/database/migrations"
 	"strconv"
 	"time"
 )
@@ -47,8 +47,12 @@ type PgDB struct {
 	CancelFunc context.CancelFunc
 }
 
+//go:embed migrations/*.sql
+var embedMigrations embed.FS //
+
 func ApplyMigrations(dbURL string) error {
-	driver, err := iofs.New(migrations.Migrations, "migrations")
+
+	driver, err := iofs.New(embedMigrations, "migrations")
 	if err != nil {
 		return fmt.Errorf("failed to create migration driver: %w", err)
 	}
