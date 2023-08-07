@@ -2,10 +2,10 @@ package server
 
 import (
 	"github.com/go-chi/chi/v5"
+	"github.com/kanutahhemo/loyality_/internal/config"
+	"github.com/kanutahhemo/loyality_/internal/storage/database"
+	"github.com/kanutahhemo/loyality_/internal/transport/handlers"
 	"github.com/sirupsen/logrus"
-	"loyality/internal/config"
-	"loyality/internal/storage/database"
-	"loyality/internal/transport/handlers"
 	"net/http"
 )
 

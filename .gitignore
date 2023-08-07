@@ -12,9 +12,8 @@
 *.out
 
 # Binaries
-cmd/loyality/main
-cmd/loyality/*log
-cmd/loyality/shortener
+cmd/gophermart/main
+cmd/gophermart/*log
 
 # Dependency directories (remove the comment below to include it)
 vendor/
