@@ -21,6 +21,10 @@ import (
 	"unicode"
 )
 
+type contextKey string
+
+const userIDKey contextKey = "userID"
+
 type msgJSON struct {
 	MsgStr string `json:"MsgStr"`
 	ErrStr string `json:"ErrStr"`
@@ -140,7 +144,7 @@ func AuthMiddleware(logger *logrus.Logger) func(http.Handler) http.Handler {
 
 			userID := int(claims["user_id"].(float64))
 
-			ctx := context.WithValue(req.Context(), "userID", userID)
+			ctx := context.WithValue(req.Context(), userIDKey, userID)
 
 			next.ServeHTTP(w, req.WithContext(ctx))
 			logger.Debug("AuthMiddleware end")

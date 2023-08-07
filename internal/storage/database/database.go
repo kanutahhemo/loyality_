@@ -30,7 +30,7 @@ type MyPool interface {
 type Withdrawal struct {
 	Order string    `json:"order"`
 	Sum   float64   `json:"sum"`
-	Date  time.Time `json:"date, omitempty"`
+	Date  time.Time `json:"date,omitempty"`
 }
 
 type Order struct {
@@ -77,7 +77,7 @@ func NewPgDatabase(dsn string) (*PgDB, error) {
 	config.MaxConns = 10 //TODO: make in configurable with arguments
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	
+
 	db, err := pgxpool.ConnectConfig(ctx, config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to the database: %w", err)
@@ -213,10 +213,10 @@ FROM   sum_orders,
 	return current, withdrawn, nil
 }
 
-func (d *PgDB) UserBalanceWithdraw(userID int, withdraw_value float64, order_id string) (bool, error) {
+func (d *PgDB) UserBalanceWithdraw(userID int, withdrawValue float64, orderID string) (bool, error) {
 
 	var current float64
-	var withdrawn_id int
+	var withdrawnID int
 
 	// Запрашиваем список ордеров пользователя из базы данных
 	err := d.Pool.QueryRow(context.Background(), `
@@ -244,13 +244,13 @@ FROM   sum_orders,
 		return false, fmt.Errorf("failed to query user balance: %w", err)
 	}
 
-	if current < withdraw_value {
+	if current < withdrawValue {
 		return false, nil
 	}
 
 	err = d.Pool.QueryRow(context.Background(), `
 		INSERT INTO sp_withdrawn_history (uid, withdrawn_value, order_id) values ($1, $2, $3) returning withdrawn_id
-`, userID, withdraw_value, order_id).Scan(&withdrawn_id)
+`, userID, withdrawValue, orderID).Scan(&withdrawnID)
 	if err != nil {
 		return false, fmt.Errorf("failed to withdraw: %w", err)
 	}
@@ -297,7 +297,7 @@ func (d *PgDB) UserGetOrder(userID int, orderID int, limit int) (Order, error) {
 	}
 
 	if count >= limit {
-		return order, fmt.Errorf("Too Many Requests")
+		return order, fmt.Errorf("too many requests")
 	}
 	err = d.Pool.QueryRow(context.Background(), `
 		INSERT INTO sp_requests_history (uid) values ($1) returning request_id
