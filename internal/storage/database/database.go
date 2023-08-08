@@ -138,7 +138,7 @@ func (d *PgDB) UserLogin(user User) (string, int, error) {
 func (d *PgDB) UserAddOrder(userID int, order string) (int, error) {
 	var orderID int
 	err := d.Pool.QueryRow(context.Background(), `
-	INSERT INTO sp_orders (uid, order_value, status_id) values ($1, $2, (select status_id from sp_statuses where status_value='REGISTERED')) returning order_id
+	INSERT INTO sp_orders (uid, order_value, status_id) values ($1, $2, (select status_id from sp_statuses where status_value='NEW')) returning order_id
 `, userID, order).Scan(&orderID)
 	if err != nil {
 		pgErr, ok := err.(*pgconn.PgError)

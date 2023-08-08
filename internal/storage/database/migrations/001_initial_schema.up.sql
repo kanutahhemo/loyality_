@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS sp_statuses (
     status_value varchar(32) UNIQUE
 );
 
-INSERT INTO sp_statuses (status_value) values ('REGISTERED'), ('INVALID'), ('PROCESSING'), ('PROCESSED') ON CONFLICT DO NOTHING;
+INSERT INTO sp_statuses (status_value) values ('NEW'), ('PROCESSING'), ('INVALID'), ('PROCESSED') ON CONFLICT DO NOTHING;
 
 CREATE TABLE IF NOT EXISTS sp_orders (
     order_id serial PRIMARY KEY,
