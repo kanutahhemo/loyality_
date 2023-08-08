@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"github.com/kanutahhemo/loyality_/internal/config"
 	"github.com/kanutahhemo/loyality_/internal/storage/database"
 	"github.com/kanutahhemo/loyality_/internal/transport/server"
@@ -14,7 +13,7 @@ import (
 func main() {
 	flag.Parse()
 	cfg := config.GetCfg()
-	fmt.Println("config: ", cfg)
+
 	logFile, err := os.OpenFile("loyality.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("failed to create log file: %s", err)
