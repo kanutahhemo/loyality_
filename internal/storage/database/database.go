@@ -326,6 +326,49 @@ func (d *PgDB) UserGetOrder(userID int, orderID int, limit int) (Order, error) {
 	return order, nil
 }
 
+func (d *PgDB) GetActiveOrders() ([]int64, error) {
+	rows, err := d.Pool.Query(context.Background(), `
+        SELECT order_value
+        FROM sp_orders
+        WHERE status_id IN (
+            SELECT status_id
+            FROM sp_statuses
+            WHERE status_value IN ('NEW', 'PROCESSING')
+        );
+    `)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query user withdrawals: %w", err)
+	}
+	defer rows.Close()
+
+	var orderValues []int64
+
+	for rows.Next() {
+		var orderValue int64
+		if err := rows.Scan(&orderValue); err != nil {
+			return nil, err
+		}
+		orderValues = append(orderValues, orderValue)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return orderValues, nil
+}
+
+func (d *PgDB) UpdateOrderStatus(orderValue int64, orderStatus string, orderAccrual float64) error {
+	err := d.Pool.QueryRow(context.Background(), `
+        UPDATE sp_orders set status_id=(select status_id from sp_statuses where status_value=$1) accrual=$2 where orderValue=$3
+    `, orderStatus, orderAccrual, orderValue)
+	if err != nil {
+		return fmt.Errorf("failed to update orders: %w", err)
+	}
+
+	return nil
+}
+
 func (d *PgDB) Ping() (int, error) {
 	var i int
 	err := d.Pool.QueryRow(context.Background(), `SELECT 1`).Scan(&i)
@@ -334,5 +377,5 @@ func (d *PgDB) Ping() (int, error) {
 		return 0, fmt.Errorf("failed to select")
 	}
 
-	return i, nil
+	return 1, nil
 }

@@ -124,7 +124,6 @@ func AuthMiddleware(logger *logrus.Logger) func(http.Handler) http.Handler {
 			}
 
 			token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
-				logger.Errorf("AuthMiddleware : %s", err)
 				return []byte(config.Cfg.SecretKey), nil
 			})
 			if err != nil || !token.Valid {
@@ -167,14 +166,13 @@ func Ping(db database.PgDB) http.HandlerFunc {
 func UserRegister(db database.PgDB, logger *logrus.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		logger.Debug("UserRegister handler start")
-		// Проверка Content-Type
+		w.Header().Set("Content-Type", "application/json")
 		if req.Header.Get("Content-Type") != "application/json" {
 			w.WriteHeader(http.StatusBadRequest)
 			logger.Errorf("UserRegister Handler : Wrong Content Type")
 			json.NewEncoder(w).Encode(msgJSON{ErrStr: "Wrong Content Type"})
 			return
 		}
-		w.Header().Set("Content-Type", "application/json")
 
 		// Чтение тела запроса
 		bodyJSON, err := io.ReadAll(req.Body)
@@ -236,13 +234,12 @@ func UserRegister(db database.PgDB, logger *logrus.Logger) http.HandlerFunc {
 func UserLogin(db database.PgDB, logger *logrus.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		logger.Debug("UserLogin handler start")
-		// Проверка Content-Type
+		w.Header().Set("Content-Type", "application/json")
 		if req.Header.Get("Content-Type") != "application/json" {
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(msgJSON{ErrStr: "Wrong Content Type"})
 			return
 		}
-		w.Header().Set("Content-Type", "application/json")
 
 		// Чтение тела запроса
 		bodyJSON, err := io.ReadAll(req.Body)
@@ -299,6 +296,7 @@ func UserLogin(db database.PgDB, logger *logrus.Logger) http.HandlerFunc {
 func UserAddOrder(db database.PgDB, logger *logrus.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		logger.Debug("UserAddOrder handler start")
+		w.Header().Set("Content-Type", "application/json")
 		userID, ok := req.Context().Value(userIDKey).(int)
 		if !ok {
 			logger.Errorf("UserAddOrder Handler : Failed to get userID from request context")
@@ -313,8 +311,6 @@ func UserAddOrder(db database.PgDB, logger *logrus.Logger) http.HandlerFunc {
 			json.NewEncoder(w).Encode(msgJSON{ErrStr: "Wrong Content Type"})
 			return
 		}
-
-		w.Header().Set("Content-Type", "application/json")
 
 		bodyText, err := io.ReadAll(req.Body)
 		if err != nil {
@@ -356,6 +352,7 @@ func UserAddOrder(db database.PgDB, logger *logrus.Logger) http.HandlerFunc {
 func UserOrders(db database.PgDB, logger *logrus.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		logger.Debug("UserOrders handler start")
+		w.Header().Set("Content-Type", "application/json")
 		userID, ok := req.Context().Value(userIDKey).(int)
 		if !ok {
 			logger.Errorf("UserOrders Handler : Failed to get userID from request context")
@@ -378,13 +375,10 @@ func UserOrders(db database.PgDB, logger *logrus.Logger) http.HandlerFunc {
 
 		if len(orders) == 0 {
 			logger.Infof("UserOrders Handler : no orders")
-			json.NewEncoder(w).Encode(msgJSON{ErrStr: "no orders"})
 			w.WriteHeader(http.StatusNoContent)
+			json.NewEncoder(w).Encode(msgJSON{ErrStr: "no orders"})
 			return
 		}
-
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
 
 		err = json.NewEncoder(w).Encode(orders)
 		if err != nil {
@@ -392,13 +386,16 @@ func UserOrders(db database.PgDB, logger *logrus.Logger) http.HandlerFunc {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
+
 		logger.Debug("UserOrders handler end")
 	}
 }
 
 func UserBalance(db database.PgDB, logger *logrus.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
+
 		logger.Debug("UserBalance handler start")
+		w.Header().Set("Content-Type", "application/json")
 		userID, ok := req.Context().Value(userIDKey).(int)
 		if !ok {
 			logger.Errorf("UserBalance Handler : Failed to get userID from request context")
@@ -422,7 +419,6 @@ func UserBalance(db database.PgDB, logger *logrus.Logger) http.HandlerFunc {
 			Withdrawn: withdrawn,
 		}
 
-		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
 		err = json.NewEncoder(w).Encode(response)
@@ -438,6 +434,7 @@ func UserBalance(db database.PgDB, logger *logrus.Logger) http.HandlerFunc {
 func UserBalanceWithdraw(db database.PgDB, logger *logrus.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		logger.Debug("UserBalanceWithdraw handler start")
+		w.Header().Set("Content-Type", "application/json")
 		userID, ok := req.Context().Value(userIDKey).(int)
 		if !ok {
 			logger.Errorf("UserBalanceWithdraw Handler :Failed to get userID from request context")
@@ -484,8 +481,6 @@ func UserBalanceWithdraw(db database.PgDB, logger *logrus.Logger) http.HandlerFu
 			return
 		}
 
-		w.Header().Set("Content-Type", "application/json")
-
 		w.WriteHeader(http.StatusOK)
 
 		err = json.NewEncoder(w).Encode(msgJSON{
@@ -505,6 +500,7 @@ func UserBalanceWithdraw(db database.PgDB, logger *logrus.Logger) http.HandlerFu
 func UserWithdrawals(db database.PgDB, logger *logrus.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		logger.Debug("UserWithdrawals handler start")
+		w.Header().Set("Content-Type", "application/json")
 		userID, ok := req.Context().Value(userIDKey).(int)
 		if !ok {
 			logger.Errorf("UserWithdrawals Handler : Failed to get userID from request context")
@@ -530,8 +526,6 @@ func UserWithdrawals(db database.PgDB, logger *logrus.Logger) http.HandlerFunc {
 			return
 		}
 
-		w.Header().Set("Content-Type", "application/json")
-
 		w.WriteHeader(http.StatusOK)
 
 		err = json.NewEncoder(w).Encode(result)
@@ -548,6 +542,7 @@ func UserWithdrawals(db database.PgDB, logger *logrus.Logger) http.HandlerFunc {
 func UserGetOrder(db database.PgDB, logger *logrus.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		logger.Debug("UserGetOrder handler start")
+		w.Header().Set("Content-Type", "application/json")
 		userID, ok := req.Context().Value(userIDKey).(int)
 		if !ok {
 			logger.Errorf("UserGetOrder Handler : Failed to get userID from request context")
@@ -565,7 +560,7 @@ func UserGetOrder(db database.PgDB, logger *logrus.Logger) http.HandlerFunc {
 		}
 
 		var result database.Order
-		limit := 3 //TODO configure limit from args
+		limit := 300 //TODO configure limit from args
 		result, err = db.UserGetOrder(userID, orderID, limit)
 		if err != nil {
 			logger.Errorf("UserGetOrder Handler : %s", err)
@@ -579,8 +574,6 @@ func UserGetOrder(db database.PgDB, logger *logrus.Logger) http.HandlerFunc {
 			json.NewEncoder(w).Encode(msgJSON{ErrStr: err.Error()})
 			return
 		}
-
-		w.Header().Set("Content-Type", "application/json")
 
 		w.WriteHeader(http.StatusOK)
 
