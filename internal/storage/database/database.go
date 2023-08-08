@@ -326,7 +326,7 @@ func (d *PgDB) UserGetOrder(userID int, orderID int, limit int) (Order, error) {
 	return order, nil
 }
 
-func (d *PgDB) GetActiveOrders() ([]int64, error) {
+func (d *PgDB) GetActiveOrders() ([]string, error) {
 	rows, err := d.Pool.Query(context.Background(), `
         SELECT order_value
         FROM sp_orders
@@ -341,10 +341,10 @@ func (d *PgDB) GetActiveOrders() ([]int64, error) {
 	}
 	defer rows.Close()
 
-	var orderValues []int64
+	var orderValues []string
 
 	for rows.Next() {
-		var orderValue int64
+		var orderValue string
 		if err := rows.Scan(&orderValue); err != nil {
 			return nil, err
 		}
@@ -358,7 +358,7 @@ func (d *PgDB) GetActiveOrders() ([]int64, error) {
 	return orderValues, nil
 }
 
-func (d *PgDB) UpdateOrderStatus(orderValue int64, orderStatus string, orderAccrual float64) error {
+func (d *PgDB) UpdateOrderStatus(orderValue string, orderStatus string, orderAccrual float64) error {
 	err := d.Pool.QueryRow(context.Background(), `
         UPDATE sp_orders set status_id=(select status_id from sp_statuses where status_value=$1) accrual=$2 where orderValue=$3
     `, orderStatus, orderAccrual, orderValue)

@@ -49,7 +49,7 @@ func (op *OrderProcessor) processOrders() {
 	}
 
 	for _, number := range numbers {
-		orderStatus, err := op.getOrderStatusFromAccrualSystem(int(number))
+		orderStatus, err := op.getOrderStatusFromAccrualSystem(number)
 		if err != nil {
 			op.Logger.Errorf("Error getting order status for order %d: %s", number, err)
 			continue
@@ -58,9 +58,9 @@ func (op *OrderProcessor) processOrders() {
 		// Обработка статуса заказа
 		switch orderStatus.Status {
 		case "PROCESSED":
-			op.updateOrderStatus(int64(number), "processed", orderStatus.Accrual)
+			op.updateOrderStatus(number, "processed", orderStatus.Accrual)
 		case "REGISTERED", "PROCESSING":
-			op.updateOrderStatus(int64(number), "processing", 0)
+			op.updateOrderStatus(number, "processing", 0)
 			time.Sleep(processingDelay)
 			// Оставляем пустой case для "INVALID", так как вам нужно выполнить определенные действия
 		default:
@@ -69,7 +69,7 @@ func (op *OrderProcessor) processOrders() {
 	}
 }
 
-func (op *OrderProcessor) getOrderStatusFromAccrualSystem(orderNumber int) (*OrderStatus, error) {
+func (op *OrderProcessor) getOrderStatusFromAccrualSystem(orderNumber string) (*OrderStatus, error) {
 	url := fmt.Sprintf("%s/api/orders/%d", op.AccrualSystemAddress, orderNumber)
 
 	client := http.Client{
@@ -95,7 +95,7 @@ func (op *OrderProcessor) getOrderStatusFromAccrualSystem(orderNumber int) (*Ord
 	return &orderStatus, nil
 }
 
-func (op *OrderProcessor) updateOrderStatus(orderNumber int64, status string, accrual float64) {
+func (op *OrderProcessor) updateOrderStatus(orderNumber string, status string, accrual float64) {
 
 	err := op.DB.UpdateOrderStatus(orderNumber, status, accrual)
 	if err != nil {
