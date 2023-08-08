@@ -60,7 +60,7 @@ func GetCfg() Config {
 		Cfg.ServerAddress = argsCfg.ServerAddress
 	}
 
-	_, present = os.LookupEnv("DATABASE_DSN")
+	_, present = os.LookupEnv("DATABASE_URI")
 	if present && envCfg.DatabaseDSN != "" {
 		Cfg.DatabaseDSN = envCfg.DatabaseDSN
 	} else {
