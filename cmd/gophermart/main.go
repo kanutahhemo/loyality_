@@ -58,8 +58,8 @@ func main() {
 	defer db.Close()
 
 	op := orderprocessor.NewOrderProcessor(*db, logger, cfg.AccrualSystemAddress)
-	orderChannel := make(chan int)
-	go op.Start(orderChannel)
+
+	go op.Start()
 
 	server.RunServer(cfg, db, logger)
 }

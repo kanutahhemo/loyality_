@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	PROCESSING_DELAY = 200 * time.Millisecond
+	processingDelay = 200 * time.Millisecond
 )
 
 type OrderStatus struct {
@@ -33,14 +33,16 @@ func NewOrderProcessor(db database.PgDB, logger *logrus.Logger, address string) 
 	}
 }
 
-func (op *OrderProcessor) Start(orderChannel chan int) {
-
-	go op.processOrders()
-
+func (op *OrderProcessor) Start() {
+	for {
+		op.processOrders()
+		time.Sleep(processingDelay)
+	}
 }
 
 func (op *OrderProcessor) processOrders() {
 	numbers, err := op.DB.GetActiveOrders()
+	fmt.Println(numbers)
 	if err != nil {
 		op.Logger.Errorf("Error getting active orders: %s", err)
 		return
@@ -59,7 +61,7 @@ func (op *OrderProcessor) processOrders() {
 			op.updateOrderStatus(int64(number), "processed", orderStatus.Accrual)
 		case "REGISTERED", "PROCESSING":
 			op.updateOrderStatus(int64(number), "processing", 0)
-			time.Sleep(PROCESSING_DELAY)
+			time.Sleep(processingDelay)
 			// Оставляем пустой case для "INVALID", так как вам нужно выполнить определенные действия
 		default:
 			op.Logger.Printf("Unknown order status: %s", orderStatus.Status)

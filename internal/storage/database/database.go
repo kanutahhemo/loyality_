@@ -363,7 +363,7 @@ func (d *PgDB) UpdateOrderStatus(orderValue int64, orderStatus string, orderAccr
         UPDATE sp_orders set status_id=(select status_id from sp_statuses where status_value=$1) accrual=$2 where orderValue=$3
     `, orderStatus, orderAccrual, orderValue)
 	if err != nil {
-		return fmt.Errorf("failed to update orders: %w", err)
+		return fmt.Errorf("failed to update orders: %s", err)
 	}
 
 	return nil
