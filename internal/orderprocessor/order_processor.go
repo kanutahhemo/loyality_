@@ -42,7 +42,7 @@ func (op *OrderProcessor) Start() {
 
 func (op *OrderProcessor) processOrders() {
 	numbers, err := op.DB.GetActiveOrders()
-	fmt.Println(numbers)
+
 	if err != nil {
 		op.Logger.Errorf("Error getting active orders: %s", err)
 		return
@@ -51,7 +51,7 @@ func (op *OrderProcessor) processOrders() {
 	for _, number := range numbers {
 		orderStatus, err := op.getOrderStatusFromAccrualSystem(number)
 		if err != nil {
-			op.Logger.Errorf("Error getting order status for order %d: %s", number, err)
+			op.Logger.Errorf("Error getting order status for order %s: %s", number, err)
 			continue
 		}
 
@@ -70,7 +70,7 @@ func (op *OrderProcessor) processOrders() {
 }
 
 func (op *OrderProcessor) getOrderStatusFromAccrualSystem(orderNumber string) (*OrderStatus, error) {
-	url := fmt.Sprintf("%s/api/orders/%d", op.AccrualSystemAddress, orderNumber)
+	url := fmt.Sprintf("%s/api/orders/%s", op.AccrualSystemAddress, orderNumber)
 
 	client := http.Client{
 		Timeout: time.Second * 10, // Таймаут для запроса
@@ -78,17 +78,20 @@ func (op *OrderProcessor) getOrderStatusFromAccrualSystem(orderNumber string) (*
 
 	response, err := client.Get(url)
 	if err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
+		fmt.Println(response.StatusCode)
 		return nil, fmt.Errorf("received non-OK status code: %d", response.StatusCode)
 	}
 
 	var orderStatus OrderStatus
 	err = json.NewDecoder(response.Body).Decode(&orderStatus)
 	if err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
 
@@ -101,5 +104,5 @@ func (op *OrderProcessor) updateOrderStatus(orderNumber string, status string, a
 	if err != nil {
 		op.Logger.Errorf("order_processor %s", err)
 	}
-	op.Logger.Printf("Order %d updated: Status=%s, Accrual=%.2f", orderNumber, status, accrual)
+	op.Logger.Printf("Order %s updated: Status=%s, Accrual=%.2f", orderNumber, status, accrual)
 }
