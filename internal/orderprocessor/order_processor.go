@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	processingDelay = 200 * time.Millisecond
+	processingDelay = 1 * time.Second
 )
 
 type OrderStatus struct {
@@ -58,6 +58,7 @@ func (op *OrderProcessor) processOrders() {
 		// Обработка статуса заказа
 		switch orderStatus.Status {
 		case "PROCESSED":
+
 			op.updateOrderStatus(number, "processed", orderStatus.Accrual)
 		case "REGISTERED", "PROCESSING":
 			op.updateOrderStatus(number, "processing", 0)
@@ -81,10 +82,11 @@ func (op *OrderProcessor) getOrderStatusFromAccrualSystem(orderNumber string) (*
 		fmt.Println(err)
 		return nil, err
 	}
+
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
-		fmt.Println(response.StatusCode)
+
 		return nil, fmt.Errorf("received non-OK status code: %d", response.StatusCode)
 	}
 
@@ -99,9 +101,10 @@ func (op *OrderProcessor) getOrderStatusFromAccrualSystem(orderNumber string) (*
 }
 
 func (op *OrderProcessor) updateOrderStatus(orderNumber string, status string, accrual float64) {
-
+	fmt.Println(orderNumber, status, accrual)
 	err := op.DB.UpdateOrderStatus(orderNumber, status, accrual)
 	if err != nil {
+
 		op.Logger.Errorf("order_processor %s", err)
 	}
 	op.Logger.Printf("Order %s updated: Status=%s, Accrual=%.2f", orderNumber, status, accrual)

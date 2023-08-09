@@ -7,10 +7,11 @@ CREATE TABLE IF NOT EXISTS sp_users (
 
 CREATE TABLE IF NOT EXISTS sp_statuses (
     status_id serial primary key,
-    status_value varchar(32) UNIQUE
+    status_value varchar(32),
+    status_acc varchar(32)
 );
 
-INSERT INTO sp_statuses (status_value) values ('NEW'), ('PROCESSING'), ('INVALID'), ('PROCESSED') ON CONFLICT DO NOTHING;
+INSERT INTO sp_statuses (status_value, status_acc) values ('NEW', 'REGISTERED'), ('PROCESSING', 'PROCESSING'), ('INVALID', 'INVALID'), ('PROCESSED', 'PROCESSED') ON CONFLICT DO NOTHING;
 
 CREATE TABLE IF NOT EXISTS sp_orders (
     order_id serial PRIMARY KEY,
@@ -18,7 +19,7 @@ CREATE TABLE IF NOT EXISTS sp_orders (
     order_value varchar(100),
     created_time timestamp DEFAULT NOW(),
     status_id int,
-    accrual float,
+    accrual float default 0,
     CONSTRAINT fk_uid foreign key(uid) references sp_users(uid) on delete cascade,
     CONSTRAINT fk_status_id foreign key(status_id) references sp_statuses on delete cascade
 );

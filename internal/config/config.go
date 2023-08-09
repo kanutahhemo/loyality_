@@ -73,10 +73,13 @@ func GetCfg() Config {
 	} else {
 		Cfg.AccrualSystemAddress = argsCfg.AccrualSystemAddress
 	}
+	if Cfg.AccrualSystemAddress == "" {
+		log.Fatal("please specify accrual system address")
+	}
 
 	Cfg.SecretKey, present = os.LookupEnv("SECRET")
 	if !present {
-		log.Print("SECRET is not specified. Set it to 111")
+		log.Print("SECRET is not specified. Set it to default")
 		Cfg.LogLevel = "111"
 	}
 

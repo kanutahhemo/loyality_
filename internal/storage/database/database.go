@@ -150,6 +150,23 @@ func (d *PgDB) UserAddOrder(userID int, order string) (int, error) {
 	return orderID, nil
 }
 
+func (d *PgDB) UserAddOrderCheck(userID int, order string) (int, int, error) {
+	var same, other int
+	err := d.Pool.QueryRow(context.Background(), `
+	select count(*) from sp_orders where uid=$1 and order_value=$2
+`, userID, order).Scan(&same)
+	if err != nil {
+		return 0, 0, fmt.Errorf("failed with adding order in the database")
+	}
+	err = d.Pool.QueryRow(context.Background(), `
+	select count(*) from sp_orders where order_value=$1
+`, order).Scan(&other)
+	if err != nil {
+		return 0, 0, fmt.Errorf("failed with adding order in the database")
+	}
+	return same, other, nil
+}
+
 func (d *PgDB) UserOrders(userID int) ([]Order, error) {
 
 	rows, err := d.Pool.Query(context.Background(), `
@@ -360,7 +377,7 @@ func (d *PgDB) GetActiveOrders() ([]string, error) {
 
 func (d *PgDB) UpdateOrderStatus(orderValue string, orderStatus string, orderAccrual float64) error {
 	err := d.Pool.QueryRow(context.Background(), `
-        UPDATE sp_orders set status_id=(select status_id from sp_statuses where status_value=$1) accrual=$2 where orderValue=$3
+        UPDATE sp_orders set status_id=(select status_id from sp_statuses where status_acc=UPPER($1)), accrual=$2 where order_value=$3
     `, orderStatus, orderAccrual, orderValue)
 	if err != nil {
 		return fmt.Errorf("failed to update orders: %s", err)

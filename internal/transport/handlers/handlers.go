@@ -327,17 +327,33 @@ func UserAddOrder(db database.PgDB, logger *logrus.Logger) http.HandlerFunc {
 			return
 		}
 
+		//this is hotfix for passing autotest. It`s not beautiful, but I`m fucked up with all this shit already. I`m so so sorry
+		same, other, err := db.UserAddOrderCheck(userID, string(bodyText))
+
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(msgJSON{ErrStr: err.Error()})
+			return
+		}
+
+		if same != 0 {
+
+			w.WriteHeader(http.StatusOK)
+			json.NewEncoder(w).Encode(msgJSON{MsgStr: "This order is already has been added by you"})
+			return
+		}
+
+		if other != 0 {
+
+			w.WriteHeader(http.StatusConflict)
+			json.NewEncoder(w).Encode(msgJSON{MsgStr: "This order is already has been added by other user"})
+			return
+		}
+		// end of hotfix
+
 		_, err = db.UserAddOrder(userID, string(bodyText))
 		if err != nil {
 			logger.Errorf("UserAddOrder Handler : %s", err)
-			if err.Error() == "not unique order" {
-				w.WriteHeader(http.StatusConflict)
-				json.NewEncoder(w).Encode(msgJSON{
-					MsgStr: "This order is already exists",
-					ErrStr: err.Error(),
-				})
-				return
-			}
 			w.WriteHeader(http.StatusInternalServerError)
 			json.NewEncoder(w).Encode(msgJSON{ErrStr: err.Error()})
 			return
