@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/go-chi/chi/v5"
 	"github.com/kanutahhemo/loyality_/internal/config"
 	"github.com/kanutahhemo/loyality_/internal/storage/database"
 	"github.com/kanutahhemo/loyality_/internal/storage/encryption"
@@ -16,7 +15,6 @@ import (
 	"math/big"
 	"net/http"
 	"sort"
-	"strconv"
 	"time"
 	"unicode"
 )
@@ -552,54 +550,5 @@ func UserWithdrawals(db database.PgDB, logger *logrus.Logger) http.HandlerFunc {
 			return
 		}
 		logger.Debug("UserWithdrawals handler end")
-	}
-}
-
-func UserGetOrder(db database.PgDB, logger *logrus.Logger) http.HandlerFunc {
-	return func(w http.ResponseWriter, req *http.Request) {
-		logger.Debug("UserGetOrder handler start")
-		w.Header().Set("Content-Type", "application/json")
-		userID, ok := req.Context().Value(userIDKey).(int)
-		if !ok {
-			logger.Errorf("UserGetOrder Handler : Failed to get userID from request context")
-			w.WriteHeader(http.StatusInternalServerError)
-			json.NewEncoder(w).Encode(msgJSON{ErrStr: "Failed to get userID from request context"})
-			return
-		}
-
-		orderIDStr := chi.URLParam(req, "number")
-		orderID, err := strconv.Atoi(orderIDStr)
-		if err != nil {
-			logger.Errorf("UserGetOrder Handler : %s", err)
-			json.NewEncoder(w).Encode(msgJSON{ErrStr: err.Error()})
-			return
-		}
-
-		var result database.Order
-		limit := 300 //TODO configure limit from args
-		result, err = db.UserGetOrder(userID, orderID, limit)
-		if err != nil {
-			logger.Errorf("UserGetOrder Handler : %s", err)
-			if err.Error() == "Too Many Requests" {
-				w.WriteHeader(http.StatusTooManyRequests)
-				message := fmt.Sprintf("No more than %v requests per minute allowed", limit)
-				w.Write([]byte(message))
-				return
-			}
-			w.WriteHeader(http.StatusInternalServerError)
-			json.NewEncoder(w).Encode(msgJSON{ErrStr: err.Error()})
-			return
-		}
-
-		w.WriteHeader(http.StatusOK)
-
-		err = json.NewEncoder(w).Encode(result)
-		if err != nil {
-			logger.Errorf("UserGetOrder Handler : %s", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Println(err.Error())
-			return
-		}
-		logger.Debug("UserGetOrder handler end")
 	}
 }

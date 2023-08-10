@@ -24,7 +24,6 @@ func RunServer(cfg config.Config, pgDB *database.PgDB, logger *logrus.Logger) {
 		r.Get("/api/user/balance", handlers.UserBalance(*pgDB, logger))
 		r.Post("/api/user/balance/withdraw", handlers.UserBalanceWithdraw(*pgDB, logger))
 		r.Get("/api/user/withdrawals", handlers.UserWithdrawals(*pgDB, logger))
-		r.Get("/api/orders/{number}", handlers.UserGetOrder(*pgDB, logger))
 	})
 
 	server := &http.Server{

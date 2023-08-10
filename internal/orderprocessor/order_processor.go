@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	processingDelay = 1 * time.Second
+	processingDelay = 500 * time.Millisecond
 )
 
 type OrderStatus struct {
@@ -85,8 +85,11 @@ func (op *OrderProcessor) getOrderStatusFromAccrualSystem(orderNumber string) (*
 
 	defer response.Body.Close()
 
-	if response.StatusCode != http.StatusOK {
-
+	if response.StatusCode == http.StatusTooManyRequests {
+		fmt.Println("Received status 429 - Too Many Requests. Retrying after 2 seconds...")
+		time.Sleep(time.Second * 2)
+		return op.getOrderStatusFromAccrualSystem(orderNumber) // Повторный запрос после таймаута
+	} else if response.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("received non-OK status code: %d", response.StatusCode)
 	}
 
