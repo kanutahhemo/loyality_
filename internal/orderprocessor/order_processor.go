@@ -60,10 +60,11 @@ func (op *OrderProcessor) processOrdersConcurrently() {
 	eg := errgroup.Group{}
 
 	for _, number := range numbers {
+		currentNumber := number
 		sem.Acquire(context.TODO(), 1)
 		eg.Go(func() error {
 			defer sem.Release(1)
-			orderStatus, err := op.getOrderStatusFromAccrualSystem(number)
+			orderStatus, err := op.getOrderStatusFromAccrualSystem(currentNumber)
 			if err != nil {
 				op.Logger.Errorf("Error getting order status for order %s: %s", number, err)
 				return err
