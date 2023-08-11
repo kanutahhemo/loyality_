@@ -85,8 +85,8 @@ func GetCfg() Config {
 
 	Cfg.LogLevel, present = os.LookupEnv("LOGLEVEL")
 	if !present {
-		log.Print("LOGLEVEL is not specified. Set it to error")
-		Cfg.LogLevel = "ERROR"
+		log.Print("LOGLEVEL is not specified. Set it to debug")
+		Cfg.LogLevel = "DEBUG"
 	}
 
 	return Cfg

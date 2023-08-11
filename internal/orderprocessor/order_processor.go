@@ -3,14 +3,20 @@ package orderprocessor
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/hashicorp/go-retryablehttp"
 	"github.com/kanutahhemo/loyality_/internal/storage/database"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/sync/errgroup"
+	"golang.org/x/sync/semaphore"
 	"net/http"
 	"time"
+
+	"context"
 )
 
 const (
-	processingDelay = 500 * time.Millisecond
+	processingDelay       = 500 * time.Millisecond
+	maxConcurrentRequests = 5 // Максимальное количество одновременных запросов
 )
 
 type OrderStatus struct {
@@ -23,24 +29,26 @@ type OrderProcessor struct {
 	DB                   database.PgDB
 	Logger               *logrus.Logger
 	AccrualSystemAddress string
+	Cooldown             time.Duration
 }
 
-func NewOrderProcessor(db database.PgDB, logger *logrus.Logger, address string) *OrderProcessor {
+func NewOrderProcessor(db database.PgDB, logger *logrus.Logger, address string, cooldown time.Duration) *OrderProcessor {
 	return &OrderProcessor{
 		DB:                   db,
 		Logger:               logger,
 		AccrualSystemAddress: address,
+		Cooldown:             cooldown,
 	}
 }
 
 func (op *OrderProcessor) Start() {
 	for {
-		op.processOrders()
+		op.processOrdersConcurrently()
 		time.Sleep(processingDelay)
 	}
 }
 
-func (op *OrderProcessor) processOrders() {
+func (op *OrderProcessor) processOrdersConcurrently() {
 	numbers, err := op.DB.GetActiveOrders()
 
 	if err != nil {
@@ -48,45 +56,53 @@ func (op *OrderProcessor) processOrders() {
 		return
 	}
 
+	sem := semaphore.NewWeighted(int64(maxConcurrentRequests))
+	eg := errgroup.Group{}
+
 	for _, number := range numbers {
-		orderStatus, err := op.getOrderStatusFromAccrualSystem(number)
-		if err != nil {
-			op.Logger.Errorf("Error getting order status for order %s: %s", number, err)
-			continue
-		}
+		sem.Acquire(context.TODO(), 1)
+		eg.Go(func() error {
+			defer sem.Release(1)
+			orderStatus, err := op.getOrderStatusFromAccrualSystem(number)
+			if err != nil {
+				op.Logger.Errorf("Error getting order status for order %s: %s", number, err)
+				return err
+			}
 
-		// Обработка статуса заказа
-		switch orderStatus.Status {
-		case "PROCESSED":
+			// Обработка статуса заказа
+			switch orderStatus.Status {
+			case "PROCESSED":
 
-			op.updateOrderStatus(number, "processed", orderStatus.Accrual)
-		case "REGISTERED", "PROCESSING":
-			op.updateOrderStatus(number, "processing", 0)
-			time.Sleep(processingDelay)
-			// Оставляем пустой case для "INVALID", так как вам нужно выполнить определенные действия
-		default:
-			op.Logger.Printf("Unknown order status: %s", orderStatus.Status)
-		}
+				op.updateOrderStatus(number, "processed", orderStatus.Accrual)
+			case "REGISTERED", "PROCESSING":
+				op.updateOrderStatus(number, "processing", 0)
+				time.Sleep(processingDelay)
+				// Оставляем пустой case для "INVALID", так как вам нужно выполнить определенные действия
+			default:
+				op.Logger.Printf("Unknown order status: %s", orderStatus.Status)
+			}
+			return nil
+		})
 	}
 }
 
 func (op *OrderProcessor) getOrderStatusFromAccrualSystem(orderNumber string) (*OrderStatus, error) {
+	retryClient := retryablehttp.NewClient()
+	retryClient.RetryMax = 3
+	retryClient.Backoff = retryablehttp.LinearJitterBackoff
+
 	url := fmt.Sprintf("%s/api/orders/%s", op.AccrualSystemAddress, orderNumber)
 
-	client := http.Client{
-		Timeout: time.Second * 10, // Таймаут для запроса
-	}
-
-	response, err := client.Get(url)
+	response, err := retryClient.Get(url)
 	if err != nil {
-		fmt.Println(err)
+		op.Logger.Errorf("Error sending request: %s", err)
 		return nil, err
 	}
 
 	defer response.Body.Close()
 
 	if response.StatusCode == http.StatusTooManyRequests {
-		fmt.Println("Received status 429 - Too Many Requests. Retrying after 2 seconds...")
+		op.Logger.Errorf("Received status 429 - Too Many Requests. Retrying after 2 seconds...")
 		time.Sleep(time.Second * 2)
 		return op.getOrderStatusFromAccrualSystem(orderNumber) // Повторный запрос после таймаута
 	} else if response.StatusCode != http.StatusOK {

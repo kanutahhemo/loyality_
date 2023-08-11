@@ -10,6 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"log"
 	"os"
+	"time"
 )
 
 func main() {
@@ -57,7 +58,7 @@ func main() {
 	defer db.CancelFunc()
 	defer db.Close()
 
-	op := orderprocessor.NewOrderProcessor(*db, logger, cfg.AccrualSystemAddress)
+	op := orderprocessor.NewOrderProcessor(*db, logger, cfg.AccrualSystemAddress, time.Second*2)
 
 	go op.Start()
 
