@@ -66,7 +66,7 @@ func (op *OrderProcessor) processOrdersConcurrently() {
 			defer sem.Release(1)
 			orderStatus, err := op.getOrderStatusFromAccrualSystem(currentNumber)
 			if err != nil {
-				op.Logger.Errorf("Error getting order status for order %s: %s", number, err)
+				op.Logger.Errorf("Error getting order status for order %s: %s", currentNumber, err)
 				return err
 			}
 
@@ -74,9 +74,9 @@ func (op *OrderProcessor) processOrdersConcurrently() {
 			switch orderStatus.Status {
 			case "PROCESSED":
 
-				op.updateOrderStatus(number, "processed", orderStatus.Accrual)
+				op.updateOrderStatus(currentNumber, "processed", orderStatus.Accrual)
 			case "REGISTERED", "PROCESSING":
-				op.updateOrderStatus(number, "processing", 0)
+				op.updateOrderStatus(currentNumber, "processing", 0)
 				time.Sleep(processingDelay)
 				// Оставляем пустой case для "INVALID", так как вам нужно выполнить определенные действия
 			default:
